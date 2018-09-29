@@ -19,6 +19,9 @@ function setSocialCount(): void {
     const title = row[1];
     const url = row[2];
 
+    if (url == '') {
+      return;
+    }
     const path = url.match(/entry.*/i)[0];
 
     const weekPv = reporter.fixPathPv(weeklyReport.rows, path);
@@ -34,7 +37,15 @@ function setSocialCount(): void {
     if (i % hour !== 0) {
       return;
     }
-    sheet.getRange("G" + (i + 1)).setValue(socialcount.hatena(url));
+    const hatenaBookmark = socialcount.hatena(url);
+    sheet.getRange("G" + (i + 1)).setValue(hatenaBookmark.count);
+    sheet.getRange("P" + (i + 1)).setValue(hatenaBookmark.comments.join(','));
+    sheet.getRange("Q" + (i + 1)).setValue(hatenaBookmark.tags.join(','));
+
+    const hatenaStar = socialcount.hatenaStar(url);
+    sheet.getRange("N" + (i + 1)).setValue(hatenaStar.stars);
+    sheet.getRange("O" + (i + 1)).setValue(hatenaStar.colored);
+
     sheet.getRange("H" + (i + 1)).setValue(socialcount.twitter(url));
     sheet.getRange("I" + (i + 1)).setValue(socialcount.pocket(url));
     // sheet.getRange("J" + (i + 1)).setValue(socialcount.facebook(url));
