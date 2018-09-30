@@ -1,4 +1,3 @@
-// time, title, url, blogname, domain, published, hatena, twitter, pocket, facebook, weeklyViews, monthlyViews, totalViews
 function setSocialCount(): void {
   Logger.log("Start!!");
   const sheet = SpreadsheetApp.getActiveSpreadsheet();
