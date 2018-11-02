@@ -27,26 +27,31 @@ function setSocialCount(): void {
     const monthPv = reporter.fixPathPv(monthlyReport.rows, path);
     const totalPv = reporter.fixPathPv(totalReport.rows, path);
 
-    sheet.getRange("K" + (i + 1)).setValue(weekPv);
-    sheet.getRange("L" + (i + 1)).setValue(monthPv);
-    sheet.getRange("M" + (i + 1)).setValue(totalPv);
+    const index = i + 1;
+
+    sheet.getRange(`K${index}`).setValue(weekPv);
+    sheet.getRange(`L${index}`).setValue(monthPv);
+    sheet.getRange(`M${index}`).setValue(totalPv);
 
     // 24時間に一回ソーシャルカウントリクエスト対象とする
     const hour = (new Date).getHours();
     if (i % hour !== 0) {
       return;
     }
+
+    sheet.getRange(`F${index}`).setValue(toDateStr(sheet.getRange(`C${index}`).getValue()));
+
     const hatenaBookmark = socialcount.hatena(url);
-    sheet.getRange("G" + (i + 1)).setValue(hatenaBookmark.count);
-    sheet.getRange("P" + (i + 1)).setValue(hatenaBookmark.comments.join(','));
-    sheet.getRange("Q" + (i + 1)).setValue(hatenaBookmark.tags.join(','));
+    sheet.getRange(`G${index}`).setValue(hatenaBookmark.count);
+    sheet.getRange(`P${index}`).setValue(hatenaBookmark.comments.join(","));
+    sheet.getRange(`Q${index}`).setValue(hatenaBookmark.tags.join(","));
 
     const hatenaStar = socialcount.hatenaStar(url);
-    sheet.getRange("N" + (i + 1)).setValue(hatenaStar.stars);
-    sheet.getRange("O" + (i + 1)).setValue(hatenaStar.colored);
+    sheet.getRange(`N${index}`).setValue(hatenaStar.stars);
+    sheet.getRange(`O${index}`).setValue(hatenaStar.colored);
 
-    sheet.getRange("H" + (i + 1)).setValue(socialcount.twitter(url));
-    sheet.getRange("I" + (i + 1)).setValue(socialcount.pocket(url));
+    sheet.getRange(`H${index}`).setValue(socialcount.twitter(url));
+    sheet.getRange(`I${index}`).setValue(socialcount.pocket(url));
     // sheet.getRange("J" + (i + 1)).setValue(socialcount.facebook(url));
   });
   Logger.log("Finish!!!");
