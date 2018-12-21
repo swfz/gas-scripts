@@ -1,20 +1,35 @@
 function sendReport() {
-  const data = Charts.newDataTable()
-    .addColumn(Charts.ColumnType.STRING, "Month")
-    .addColumn(Charts.ColumnType.NUMBER, "In Store")
-    .addColumn(Charts.ColumnType.NUMBER, "Online")
-    .addRow(["January", 10, 1])
-    .addRow(["February", 12, 1])
-    .addRow(["March", 20, 2])
-    .addRow(["April", 25, 3])
-    .addRow(["May", 30, 4])
-    .build();
 
-  const chart = Charts.newAreaChart()
+  const from = Moment.moment().subtract(2, "days").format("YYYY-MM-DD");
+  const to = Moment.moment().subtract(1, "days").format("YYYY-MM-DD");
+  const metrics = "ga:pageViews";
+  const options = {
+    "dimensions": "ga:pageTitle",
+    "max-results": 5000,
+  };
+  const gaReport = Analytics.Data.Ga.get(
+    `ga:${PropertiesService.getScriptProperties().getProperty("GA_TABLE_ID")}`,
+    from,
+    to,
+    metrics,
+    options,
+  );
+
+  Logger.log(gaReport);
+
+  const dataTable = Charts.newDataTable()
+    .addColumn(Charts.ColumnType.STRING, "Title")
+    .addColumn(Charts.ColumnType.NUMBER, "PV");
+
+  gaReport.rows.sort((a,b) => b[1] - a[1]).forEach(row => {
+    dataTable.addRow(row)
+  });
+
+  const data = dataTable.build();
+
+  const chart = Charts.newTableChart()
     .setDataTable(data)
-    .setStacked()
-    .setRange(0, 40)
-    .setTitle("Sales per Month")
+    .setDimensions(400,500)
     .build();
 
   const imageFile = chart.getAs("image/png");
@@ -29,10 +44,10 @@ function sendReport() {
   UrlFetchApp.fetch("https://slack.com/api/files.upload", {
     method: "post",
     payload: {
-      token: token,
+      channels: channelId,
       file: imageFile,
       filename: "graph.png",
-      channels: channelId
+      token: token,
     }
   });
 }
