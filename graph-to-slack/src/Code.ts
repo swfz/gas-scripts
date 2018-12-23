@@ -1,10 +1,13 @@
 function sendReport() {
-  const from = Moment.moment()
+  const yesterday = Moment.moment()
     .subtract(1, "days")
     .format("YYYY-MM-DD");
-  const to = Moment.moment()
-    .subtract(1, "days")
+  const twoDaysAgo = Moment.moment()
+    .subtract(2, "days")
     .format("YYYY-MM-DD");
+  const tableId = `ga:${PropertiesService.getScriptProperties().getProperty(
+    "GA_TABLE_ID"
+  )}`;
   const metrics = "ga:pageViews";
   const options = {
     dimensions: "ga:pageTitle",
@@ -12,26 +15,36 @@ function sendReport() {
   };
 
   const gaReport = Analytics.Data.Ga.get(
-    `ga:${PropertiesService.getScriptProperties().getProperty("GA_TABLE_ID")}`,
-    from,
-    to,
+    tableId,
+    yesterday,
+    yesterday,
+    metrics,
+    options
+  );
+  const gaReport2 = Analytics.Data.Ga.get(
+    tableId,
+    twoDaysAgo,
+    twoDaysAgo,
     metrics,
     options
   );
 
-  Logger.log(gaReport);
-
   const dataTable = Charts.newDataTable()
     .addColumn(Charts.ColumnType.STRING, "Title")
-    .addColumn(Charts.ColumnType.NUMBER, "PV");
+    .addColumn(Charts.ColumnType.NUMBER, `${yesterday} pv`)
+    .addColumn(Charts.ColumnType.NUMBER, `${twoDaysAgo} pv`);
   gaReport.rows
     .sort((a, b) => b[1] - a[1])
     .filter((_, i) => i < 10)
     .forEach(row => {
-      dataTable.addRow(row);
+      const beforeRow = gaReport2.rows.filter(r => r[0] === row[0])[0];
+      const beforeNumber = beforeRow ? beforeRow[1] || 0 : 0;
+      dataTable.addRow([...row, beforeNumber]);
     });
+
   const chart = Charts.newBarChart()
     .setDataTable(dataTable)
+    .setDimensions(800, 600)
     .setTitle("前日PV上位10記事")
     .build();
 
