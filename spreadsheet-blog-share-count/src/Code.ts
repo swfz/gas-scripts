@@ -121,3 +121,96 @@ class GaReport {
     );
   }
 }
+
+function recordStatus(): void {
+  const recorder = new StatusRecorder();
+  const status = recorder.getStatus();
+  const social = recorder.calcSocialCounts();
+  const row = [
+    Moment.moment().subtract(1, "days").format("YYYY-MM-DD"),
+    status.entries,
+    status.subscribers,
+    social.hatena,
+    social.twitter,
+    social.pocket,
+    social.facebook,
+    social.hatenaStar,
+    social.hatenaColoredStar
+  ];
+
+  Logger.log(row);
+
+  recorder.updateOrCreateStatus(row);
+}
+
+export interface IStatus{
+  entries: number;
+  subscribers: number;
+}
+
+export interface ISocialCounts {
+  hatena: number;
+  twitter: number;
+  pocket: number;
+  facebook: number;
+  hatenaStar: number;
+  hatenaColoredStar: number;
+}
+
+class StatusRecorder {
+  private book: any;
+  constructor(){
+    this.book = SpreadsheetApp.getActiveSpreadsheet();
+  }
+
+  calcSocialCounts(): ISocialCounts {
+    const sheet = this.book.getSheetByName("Sheet1");
+    return sheet.getRange('G2:O').getValues().reduce((acc, cur) => {
+      acc.hatena += parseInt(cur[0] || 0);
+      acc.twitter += parseInt(cur[1] || 0);
+      acc.pocket += parseInt(cur[2] || 0);
+      acc.facebook += parseInt(cur[3] || 0);
+      acc.hatenaStar += parseInt(cur[7] || 0);
+      acc.hatenaColoredStar += parseInt(cur[8] || 0);
+      return acc;
+    }, {
+      hatena: 0,
+      twitter: 0,
+      pocket: 0,
+      facebook: 0,
+      hatenaStar: 0,
+      hatenaColoredStar: 0
+    });
+  }
+
+  getStatus(): IStatus {
+    const blogUrl = PropertiesService.getScriptProperties().getProperty("HATENA_BLOG_URL")
+    const content = UrlFetchApp.fetch(`${blogUrl}/about`).getContentText();
+    const entries = content.match(/(\d+) 記事/)[1];
+    const subscribers = content.match(/(\d+) 人/)[1];
+
+    return {
+      entries: entries,
+      subscribers: subscribers
+    };
+  }
+
+  updateOrCreateStatus(row): void {
+    const sheet = this.book.getSheetByName("status");
+
+    const data = sheet.getDataRange().getValues();
+    const rowIndex = data.reduce((acc,cur,i) => {
+      if(Moment.moment(cur[0]).format("YYYY-MM-DD") === row[0]) {
+        acc = i+1;
+      }
+      return acc;
+    },null);
+
+    if (rowIndex !== null) {
+      sheet.getRange(`A${rowIndex}:C${rowIndex}`).setValues([row])
+    }
+    else {
+      sheet.appendRow(row);
+    }
+  }
+}

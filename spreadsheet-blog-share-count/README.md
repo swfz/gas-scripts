@@ -4,6 +4,9 @@
 - GASのAnalyticsAPI
 - social-count(GASのライブラリ)
 
+# ScriptProperties
+- HATENA_BLOG_URL
+
 # Spreadsheet columns
 
 | 列 | column | description | Write From |
