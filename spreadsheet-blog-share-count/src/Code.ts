@@ -46,6 +46,11 @@ function setSocialCount(): void {
     sheet.getRange(`P${index}`).setValue(hatenaBookmark.comments.join(","));
     sheet.getRange(`Q${index}`).setValue(hatenaBookmark.tags.join(","));
 
+    const tagRecorder = new HatenaTagRecorder();
+    hatenaBookmark.tags.forEach(tag => tagRecorder.findOrCreate(url, tag))
+    const commentRecorder = new HatenaCommentRecorder();
+    hatenaBookmark.comments.forEach(comment => commentRecorder.findOrCreate(url, comment));
+
     const hatenaStar = socialcount.hatenaStar(url);
     sheet.getRange(`N${index}`).setValue(hatenaStar.stars);
     sheet.getRange(`O${index}`).setValue(hatenaStar.colored);
@@ -211,6 +216,41 @@ class StatusRecorder {
     }
     else {
       sheet.appendRow(row);
+    }
+  }
+}
+class HatenaTagRecorder {
+  private book: any;
+  constructor(){
+    this.book = SpreadsheetApp.getActiveSpreadsheet();
+  }
+
+  findOrCreate(url: string, tag: string) {
+    const sheet = this.book.getSheetByName("tags");
+
+    const data = sheet.getDataRange().getValues();
+
+    const existRow = data.filter(row => row[0] === url && row[1] === tag);
+    if (existRow.length === 0) {
+      sheet.appendRow([url, tag]);
+    }
+  }
+}
+
+class HatenaCommentRecorder {
+  private book: any;
+  constructor(){
+    this.book = SpreadsheetApp.getActiveSpreadsheet();
+  }
+
+  findOrCreate(url: string, comment: string) {
+    const sheet = this.book.getSheetByName("comments");
+
+    const data = sheet.getDataRange().getValues();
+
+    const existRow = data.filter(row => row[0] === url && row[1] === comment);
+    if (existRow.length === 0) {
+      sheet.appendRow([url, comment]);
     }
   }
 }
