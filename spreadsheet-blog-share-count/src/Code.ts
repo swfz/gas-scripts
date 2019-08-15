@@ -56,8 +56,6 @@ function setSocialCount(): void {
     sheet.getRange(`O${index}`).setValue(hatenaStar.colored);
 
     sheet.getRange(`H${index}`).setValue(socialcount.twitter(url));
-    sheet.getRange(`I${index}`).setValue(socialcount.pocket(url));
-    // sheet.getRange("J" + (i + 1)).setValue(socialcount.facebook(url));
   });
   Logger.log("Finish!!!");
 }
