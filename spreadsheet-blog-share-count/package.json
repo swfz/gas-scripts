@@ -10,11 +10,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/google-apps-script": "0.0.27",
     "clasp": "^0.1.0"
   },
   "devDependencies": {
     "@google/clasp": "^1.5.3",
+    "@types/google-apps-script": "0.0.27",
+    "moment": "^2.24.0",
     "tslint": "^5.11.0"
   }
 }
